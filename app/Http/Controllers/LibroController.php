@@ -63,6 +63,41 @@ class LibroController extends Controller
         return response()->json('Registro borrado');
     }
 
+    public function update(Request $request, $id){
+
+        $datosLibro = Libro::find($id);
+
+        if ($request->input('titulo')) {
+            $datosLibro->titulo = $request->input('titulo');
+        }
+
+        if ($request->hasFile('archivo')) {
+
+            if ($datosLibro) { //delete file
+                $rutaArchivo = base_path('public') . $datosLibro->archivo;
+    
+                if (file_exists($rutaArchivo)) {
+                    unlink($rutaArchivo);
+                }
+    
+                $datosLibro->delete();
+            }
+
+            //save new file
+            $nombreArchivoOriginal = $request->file('archivo')->getClientOriginalName();
+            $nuevoNombre = Carbon::now()->timestamp ."_". $nombreArchivoOriginal;
+            $carpetaDestino = './upload/';
+ 
+            $request->file('archivo')->move($carpetaDestino, $nuevoNombre);
+
+            $datosLibro = new Libro;
+            $datosLibro->archivo = ltrim($carpetaDestino, '.').$nuevoNombre;
+        }
+
+        $datosLibro->save();
+
+        return response()->json($datosLibro);
+    }
 
 
 }

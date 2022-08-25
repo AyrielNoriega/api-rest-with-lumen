@@ -46,12 +46,21 @@ class LibroController extends Controller
     }
 
     public function delete($id){
-        // $datosLibro = new Libro;
-        // $datosLibro = $datosLibro->find($id);
+        $datosLibro = Libro::find($id);
 
-        // return response()->json($datosLibro);
+        if ($datosLibro) {
+            $rutaArchivo = base_path('public') . $datosLibro->archivo;
 
-        return response()->json('borrar');
+            if (file_exists($rutaArchivo)) {
+                unlink($rutaArchivo);
+            }
+
+            $datosLibro->delete();
+        } else {
+            return response()->json('No hay registro');
+        }
+
+        return response()->json('Registro borrado');
     }
 
 

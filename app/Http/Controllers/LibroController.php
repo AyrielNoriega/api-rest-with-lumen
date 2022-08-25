@@ -3,6 +3,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Libro;
+use Carbon\Carbon;
 
 class LibroController extends Controller
 {
@@ -14,12 +15,45 @@ class LibroController extends Controller
 
     public function store(Request $request)
     {
-        $libro = new Libro;
-        $libro->titulo  = $request->titulo;
-        $libro->archivo = $request->archivo;
-        $libro->save();
+        
+        if ($request->hasFile('archivo')) {
+            $nombreArchivoOriginal = $request->file('archivo')->getClientOriginalName();
+            $nuevoNombre = Carbon::now()->timestamp ."_". $nombreArchivoOriginal;
+            $carpetaDestino = './upload/';
+ 
+            $request->file('archivo')->move($carpetaDestino, $nuevoNombre);
 
-        return response()->json($request);
+            $libro = new Libro;
+            $libro->titulo  = $request->titulo;
+            $libro->archivo = ltrim($carpetaDestino, '.').$nuevoNombre;
+            $libro->save();
+        }
+
+
+        $file = $request->file('archivo');
+
+        // $name = $file->hashName(); // Generate a unique, random name...
+        // $extension = $file->extension(); 
+
+        return response()->json($nuevoNombre);
     }
+
+    public function show($id){
+        $datosLibro = new Libro;
+        $datosLibro = $datosLibro->find($id);
+
+        return response()->json($datosLibro);
+    }
+
+    public function delete($id){
+        // $datosLibro = new Libro;
+        // $datosLibro = $datosLibro->find($id);
+
+        // return response()->json($datosLibro);
+
+        return response()->json('borrar');
+    }
+
+
 
 }
